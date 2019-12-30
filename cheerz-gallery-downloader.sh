@@ -2,7 +2,8 @@
 # Bertrand B.
 
 # Script parameters.
-PARAM_GALERY_URL="";
+PARAM_GALERY_URL='';
+PARAM_IMG_FOLDER=$PWD/cheerz;
 
 usage () {
   echo "Usage: $(basename "$0") [OPTIONS]";
@@ -12,9 +13,16 @@ usage () {
 
 
 configure () {
-  while [ "$#" -gt "0" ];
-  do
+  while [ "$#" -gt "0" ]; do
     case "$1" in
+      -d)
+        if [ $1 != "." ]; then
+          PARAM_IMG_FOLDER="$PWD/$2";
+        else
+          PARAM_IMG_FOLDER="$PWD";
+        fi
+        shift 2;
+        ;;
       -h | --help)
         usage;
         exit 0;
@@ -34,7 +42,7 @@ download () {
 
   NB_PICTURES=$(echo $JSON_DATA | jq 'length');
 
-  echo "There is $NB_PICTURES pictures.";
+  echo "There is $NB_PICTURES pictures. They will be saved in $PARAM_IMG_FOLDER.";
   echo 'Start downloading.';
 
   for i in `seq 0 $((NB_PICTURES - 1))`; do
@@ -45,8 +53,8 @@ download () {
       TAKEN_AT=$(echo $DATA | jq '.taken_at' | sed 's/"//g');
 
       EXTENSION='.jpg';
-      IMG_CHEERZ=./$(date -d $TAKEN_AT '+%Y%m%d%H%M%S')-cheerz$EXTENSION;
-      IMG_ORIGINAL=./$(date -d $TAKEN_AT '+%Y%m%d%H%M%S')-original$EXTENSION;
+      IMG_CHEERZ=$PARAM_IMG_FOLDER/$(date -d $TAKEN_AT '+%Y%m%d%H%M%S')-cheerz$EXTENSION;
+      IMG_ORIGINAL=$PARAM_IMG_FOLDER/$(date -d $TAKEN_AT '+%Y%m%d%H%M%S')-original$EXTENSION;
       EXIF_DATE=$(date -d $TAKEN_AT '+%Y:%m:%d %H:%M:%S');
 
       echo "[$((i + 1))/$NB_PICTURES] Downloading images $ID and setting up date to $EXIF_DATE.";
@@ -60,6 +68,10 @@ download () {
 
 run () {
   configure $*;
+  if [ ! -d "$PARAM_IMG_FOLDER" ]
+  then
+    mkdir -vp "$PARAM_IMG_FOLDER";
+  fi
   download;
 }
 

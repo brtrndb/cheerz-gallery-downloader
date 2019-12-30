@@ -6,8 +6,9 @@ PARAM_GALERY_URL='';
 PARAM_IMG_FOLDER=$PWD/cheerz;
 
 usage () {
-  echo "Usage: $(basename "$0") [OPTIONS]";
+  echo "Usage: $(basename "$0") URL [OPTIONS]";
   echo "Options:";
+  echo "  -d PATH:      Save pictures in the specified folder."
   echo "  -h, --help:   Display usage."
 }
 

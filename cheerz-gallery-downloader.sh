@@ -1,12 +1,35 @@
 #!/bin/sh
 # Bertrand B.
 
+# Script parameters.
+PARAM_GALERY_URL="";
 
-run () {
-  GALERY_URL=$1;
+usage () {
+  echo "Usage: $(basename "$0") [OPTIONS]";
+  echo "Options:";
+  echo "  -h, --help:   Display usage."
+}
 
-  echo 'Getting list of all pictures...';
-  CHEERZ_DATA=$(wget -q $GALERY_URL -O - | grep photoData | sed -e 's/<[^>]*>//g' | cut -d'=' -f 2- | jq '.photoData');
+
+configure () {
+  while [ "$#" -gt "0" ];
+  do
+    case "$1" in
+      -h | --help)
+        usage;
+        exit 0;
+        ;;
+      *)
+        PARAM_GALERY_URL=$1;
+        shift 1;
+        ;;
+    esac
+  done
+}
+
+download () {
+  echo "Getting list of all pictures from: $PARAM_GALERY_URL.";
+  CHEERZ_DATA=$(wget -q $PARAM_GALERY_URL -O - | grep photoData | sed -e 's/<[^>]*>//g' | cut -d'=' -f 2- | jq '.photoData');
   JSON_DATA=$(echo $CHEERZ_DATA | jq 'sort_by(.taken_at)');
 
   NB_PICTURES=$(echo $JSON_DATA | jq 'length');
@@ -33,6 +56,11 @@ run () {
   done;
 
   echo 'Finished.';
+}
+
+run () {
+  configure $*;
+  download;
 }
 
 run "$*";
